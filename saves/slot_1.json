@@ -1,0 +1,9 @@
+{
+  "slot": 1,
+  "name": "Save Slot 1",
+  "factory": {
+    "money": 0,
+    "machines": [],
+    "items": {}
+  }
+}
