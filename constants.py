@@ -1,7 +1,7 @@
 from enum import Enum, auto
 
 
-class GameState(Enum):
+class ScreenState(Enum):
     MAIN = auto()
     GAME = auto()
     EXIT = auto()
@@ -22,6 +22,7 @@ class Color(Enum):
 class FontType(Enum):
     TITLE = auto()
     BODY = auto()
+    SMALL = auto()
 
 
 class Screen:
@@ -38,4 +39,5 @@ class Font:
     SIZES = {
         FontType.TITLE: 56,
         FontType.BODY: 34,
+        FontType.SMALL: 20,
     }
