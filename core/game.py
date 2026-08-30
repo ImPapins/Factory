@@ -1,3 +1,6 @@
+from os import environ
+environ['PYGAME_HIDE_SUPPORT_PROMPT'] = '1'
+
 import pygame
 
 from constants import *
@@ -38,6 +41,7 @@ class Game:
 
         self.current_state = ScreenState.MAIN
         self.current_screen = self.screens[self.current_state]
+        self.current_screen.on_enter()
 
         self.transition = FadeTransition(
             Screen.WIDTH,
@@ -59,7 +63,6 @@ class Game:
 
     def handle_events(self):
         for event in pygame.event.get():
-
             if event.type == pygame.QUIT:
                 self.running = False
                 continue
@@ -69,6 +72,9 @@ class Game:
                     event.size,
                     pygame.RESIZABLE
                 )
+                continue
+
+            if self.transition.active:
                 continue
 
             if event.type == pygame.MOUSEMOTION:
@@ -93,7 +99,8 @@ class Game:
             result = self.current_screen.handle_event(event)
 
             if result is not None:
-                self.change_screen(result)
+                screen, data = result
+                self.change_screen(screen, data)
 
     def update(self, dt: float):
         self.current_screen.update(dt)
@@ -131,7 +138,7 @@ class Game:
 
         pygame.display.flip()
 
-    def change_screen(self, state: ScreenState):
+    def change_screen(self, state: ScreenState, params=None):
         if state == self.current_state:
             return
 
@@ -139,16 +146,19 @@ class Game:
             return
 
         self.transition.start(
-            lambda: self._set_screen(state)
+            lambda: self._set_screen(state, params)
         )
 
-    def _set_screen(self, state: ScreenState):
+    def _set_screen(self, state: ScreenState, params=None):
         if state == ScreenState.EXIT:
             self.running = False
             return
+        
+        self.current_screen.on_exit()
 
         self.current_state = state
         self.current_screen = self.screens[state]
+        self.current_screen.on_enter(params)
 
     def transform_mouse_pos(self, pos):
         window_width, window_height = self.screen.get_size()

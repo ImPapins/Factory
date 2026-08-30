@@ -1,8 +1,9 @@
 import pygame
 
-from constants import Color, FontType, ScreenState
+from constants import Color, FontType, ScreenState, TransitionParam
 from screens.base import BaseScreen
 from save_data import SaveSlot, delete_save, ensure_save, get_save_slots
+from typing import Any
 
 class MenuScreen(BaseScreen):
     def __init__(self, fonts: dict[FontType, pygame.font.Font]):
@@ -13,6 +14,11 @@ class MenuScreen(BaseScreen):
         self.play_button = pygame.Rect(0, 0, 240, 56)
         self.quit_button = pygame.Rect(0, 0, 180, 56)
         self.selected_slot: SaveSlot | None = None
+        self.confirm_delete = False
+
+    def on_enter(self, params: dict[TransitionParam, Any] | None = None):
+        self.slots = get_save_slots()
+        self.selected_slot = None
         self.confirm_delete = False
 
     def update_layout(self, surface):
@@ -58,10 +64,14 @@ class MenuScreen(BaseScreen):
                 if self.play_button.collidepoint(event.pos):
                     ensure_save(self.selected_slot)
                     self.slots = get_save_slots()
-                    return ScreenState.GAME
+
+                    return (
+                        ScreenState.GAME,
+                        {TransitionParam.SAVE_SLOT: self.selected_slot}
+                    )
 
             if self.quit_button.collidepoint(event.pos):
-                return ScreenState.EXIT
+                return (ScreenState.EXIT, ())
 
         return None
 

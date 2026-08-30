@@ -1,8 +1,10 @@
 import pygame
 
-from constants import Color, FontType, ScreenState
+from constants import Color, FontType, ScreenState, TransitionParam
 from screens.base import BaseScreen
 from save_data import SaveSlot, load_save, save_game
+from typing import Any
+
 
 class GameScreen(BaseScreen):
     def __init__(self, fonts: dict[FontType, pygame.font.Font]):
@@ -14,6 +16,11 @@ class GameScreen(BaseScreen):
         self.save_button = pygame.Rect(0, 0, 180, 52)
         self.main_button = pygame.Rect(0, 0, 180, 52)
         self.saved_message_until = 0
+
+    def on_enter(self, params: dict[TransitionParam, Any] | None = None):
+        if params and TransitionParam.SAVE_SLOT in params:
+            slot = params[TransitionParam.SAVE_SLOT]
+            self.open_slot(slot)
 
     def open_slot(self, slot: SaveSlot):
         self.current_slot = slot
@@ -40,7 +47,8 @@ class GameScreen(BaseScreen):
                     return None
 
                 if self.main_button.collidepoint(event.pos):
-                    return ScreenState.MAIN
+                    self.show_settings = False
+                    return (ScreenState.MAIN, ())
 
         return None
 
@@ -48,9 +56,6 @@ class GameScreen(BaseScreen):
         width, height = surface.get_size()
         self.update_layout(surface)
         surface.fill(Color.GAME_BACKGROUND.value)
-
-        if self.current_slot is not None:
-            self.draw_text(surface, self.current_slot.name, (width // 2, height // 2))
 
         settings_color = (
             Color.PANEL_HOVER.value

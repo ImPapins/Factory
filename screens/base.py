@@ -1,6 +1,7 @@
 import pygame
 
-from constants import Color, FontType
+from constants import Color, FontType, TransitionParam
+from typing import Any
 
 class BaseScreen:
     def __init__(self, fonts: dict[FontType, pygame.font.Font]):
@@ -9,6 +10,14 @@ class BaseScreen:
 
     def set_mouse_pos(self, pos):
         self.mouse_pos = pos
+
+    def on_enter(self, params: dict[TransitionParam, Any] | None = None):
+        """화면으로 진입할 때 호출 (데이터 전달 및 상태 초기화)"""
+        pass
+
+    def on_exit(self):
+        """화면을 벗어날 때 호출 (정리 작업)"""
+        pass
 
     def handle_event(self, event):
         return None
