@@ -32,7 +32,7 @@ class MenuScreen(BaseScreen):
 
         button_width = min(420, width - 80)
         button_height = 64
-        start_y = height // 2 - 40
+        start_y = height // 2 - 90
 
         self.slot_buttons = {}
         for offset, slot in enumerate(self.slots):
@@ -83,8 +83,8 @@ class MenuScreen(BaseScreen):
         self.update_layout(surface)
 
         surface.fill(Color.BACKGROUND.value)
-        self.draw_text(surface, "Automation Factory", (width // 2, 110), font_type=FontType.TITLE)
-        self.draw_text(surface, "Choose a save slot", (width // 2, 170))
+        self.draw_text(surface, "Automation Factory", (width // 2, 90), font_type=FontType.TITLE)
+        self.draw_text(surface, "Choose a save slot", (width // 2, 140))
 
         for slot in self.slots:
             rect = self.slot_buttons[slot.index]

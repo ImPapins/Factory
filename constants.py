@@ -6,9 +6,6 @@ class ScreenState(Enum):
     GAME = auto()
     EXIT = auto()
 
-class TransitionParam(Enum):
-    SAVE_SLOT = auto()   # 선택된 SaveSlot 객체
-
 class Color(Enum):
     BACKGROUND = (24, 28, 34)
     GAME_BACKGROUND = (30, 160, 90)
