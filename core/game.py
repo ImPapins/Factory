@@ -4,6 +4,7 @@ environ['PYGAME_HIDE_SUPPORT_PROMPT'] = '1'
 import pygame
 
 from constants import *
+from save_data import SaveSlot
 from screens.menu import MenuScreen
 from screens.game import GameScreen
 from core.transition import FadeTransition
@@ -41,12 +42,11 @@ class Game:
 
         self.current_state = ScreenState.MAIN
         self.current_screen = self.screens[self.current_state]
-        self.current_screen.on_enter()
 
         self.transition = FadeTransition(
             Screen.WIDTH,
             Screen.HEIGHT,
-            duration=0.3
+            duration=Screen.FADE_DURATION_MS / 1000
         )
 
         self.mouse_pos = (-1, -1)
@@ -63,6 +63,7 @@ class Game:
 
     def handle_events(self):
         for event in pygame.event.get():
+
             if event.type == pygame.QUIT:
                 self.running = False
                 continue
@@ -72,9 +73,6 @@ class Game:
                     event.size,
                     pygame.RESIZABLE
                 )
-                continue
-
-            if self.transition.active:
                 continue
 
             if event.type == pygame.MOUSEMOTION:
@@ -99,8 +97,11 @@ class Game:
             result = self.current_screen.handle_event(event)
 
             if result is not None:
-                screen, data = result
-                self.change_screen(screen, data)
+                if isinstance(result, tuple):
+                    state, slot = result
+                else:
+                    state, slot = result, None
+                self.change_screen(state, slot)
 
     def update(self, dt: float):
         self.current_screen.update(dt)
@@ -138,7 +139,7 @@ class Game:
 
         pygame.display.flip()
 
-    def change_screen(self, state: ScreenState, params=None):
+    def change_screen(self, state: ScreenState, slot: SaveSlot | None = None):
         if state == self.current_state:
             return
 
@@ -146,19 +147,19 @@ class Game:
             return
 
         self.transition.start(
-            lambda: self._set_screen(state, params)
+            lambda: self._set_screen(state, slot)
         )
 
-    def _set_screen(self, state: ScreenState, params=None):
+    def _set_screen(self, state: ScreenState, slot: SaveSlot | None = None):
         if state == ScreenState.EXIT:
             self.running = False
             return
-        
-        self.current_screen.on_exit()
 
         self.current_state = state
         self.current_screen = self.screens[state]
-        self.current_screen.on_enter(params)
+
+        if state == ScreenState.GAME and slot is not None:
+            self.current_screen.open_slot(slot)
 
     def transform_mouse_pos(self, pos):
         window_width, window_height = self.screen.get_size()

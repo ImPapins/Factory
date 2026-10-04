@@ -1,9 +1,8 @@
 import pygame
 
-from constants import Color, FontType, ScreenState, TransitionParam
+from constants import Color, FontType, ScreenState
 from screens.base import BaseScreen
 from save_data import SaveSlot, delete_save, ensure_save, get_save_slots
-from typing import Any
 
 class MenuScreen(BaseScreen):
     def __init__(self, fonts: dict[FontType, pygame.font.Font]):
@@ -16,13 +15,21 @@ class MenuScreen(BaseScreen):
         self.selected_slot: SaveSlot | None = None
         self.confirm_delete = False
 
-    def on_enter(self, params: dict[TransitionParam, Any] | None = None):
-        self.slots = get_save_slots()
-        self.selected_slot = None
-        self.confirm_delete = False
-
     def update_layout(self, surface):
         width, height = surface.get_size()
+        selected = self.selected_slot
+        layout_key = (
+            width,
+            height,
+            selected.index if selected is not None else None,
+            selected.exists if selected is not None else None,
+        )
+
+        if layout_key == self._layout_key:
+            return
+
+        self._layout_key = layout_key
+
         button_width = min(420, width - 80)
         button_height = 64
         start_y = height // 2 - 40
@@ -64,14 +71,10 @@ class MenuScreen(BaseScreen):
                 if self.play_button.collidepoint(event.pos):
                     ensure_save(self.selected_slot)
                     self.slots = get_save_slots()
-
-                    return (
-                        ScreenState.GAME,
-                        {TransitionParam.SAVE_SLOT: self.selected_slot}
-                    )
+                    return ScreenState.GAME, self.selected_slot
 
             if self.quit_button.collidepoint(event.pos):
-                return (ScreenState.EXIT, ())
+                return ScreenState.EXIT
 
         return None
 

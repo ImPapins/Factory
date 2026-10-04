@@ -1,9 +1,11 @@
 from dataclasses import dataclass
 import json
+import os
 from pathlib import Path
 
 
-SAVE_DIR = Path("saves")
+BASE_DIR = Path(__file__).resolve().parent
+SAVE_DIR = BASE_DIR / "saves"
 SAVE_SLOT_COUNT = 3
 
 
@@ -18,9 +20,14 @@ class SaveSlot:
         return self.path.exists()
 
 
-def create_default_save(slot: SaveSlot):
+def _write_json_atomic(path: Path, data):
     SAVE_DIR.mkdir(exist_ok=True)
+    tmp_path = path.with_name(path.name + ".tmp")
+    tmp_path.write_text(json.dumps(data, indent=2), encoding="utf-8")
+    os.replace(tmp_path, path)
 
+
+def create_default_save(slot: SaveSlot):
     data = {
         "slot": slot.index,
         "name": slot.name,
@@ -31,7 +38,7 @@ def create_default_save(slot: SaveSlot):
         },
     }
 
-    slot.path.write_text(json.dumps(data, indent=2), encoding="utf-8")
+    _write_json_atomic(slot.path, data)
 
 
 def load_save(slot: SaveSlot):
@@ -40,8 +47,7 @@ def load_save(slot: SaveSlot):
 
 
 def save_game(slot: SaveSlot, data):
-    SAVE_DIR.mkdir(exist_ok=True)
-    slot.path.write_text(json.dumps(data, indent=2), encoding="utf-8")
+    _write_json_atomic(slot.path, data)
 
 
 def delete_save(slot: SaveSlot):

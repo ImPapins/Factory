@@ -1,10 +1,8 @@
 import pygame
 
-from constants import Color, FontType, ScreenState, TransitionParam
+from constants import Color, FontType, ScreenState
 from screens.base import BaseScreen
 from save_data import SaveSlot, load_save, save_game
-from typing import Any
-
 
 class GameScreen(BaseScreen):
     def __init__(self, fonts: dict[FontType, pygame.font.Font]):
@@ -17,17 +15,19 @@ class GameScreen(BaseScreen):
         self.main_button = pygame.Rect(0, 0, 180, 52)
         self.saved_message_until = 0
 
-    def on_enter(self, params: dict[TransitionParam, Any] | None = None):
-        if params and TransitionParam.SAVE_SLOT in params:
-            slot = params[TransitionParam.SAVE_SLOT]
-            self.open_slot(slot)
-
     def open_slot(self, slot: SaveSlot):
         self.current_slot = slot
         self.save_data = load_save(slot)
         self.show_settings = False
 
     def update_layout(self, surface):
+        layout_key = surface.get_size()
+
+        if layout_key == self._layout_key:
+            return
+
+        self._layout_key = layout_key
+
         width, _ = surface.get_size()
         self.settings_button.topright = (width - 24, 24)
         self.save_button.topright = (width - 24, 88)
@@ -47,8 +47,9 @@ class GameScreen(BaseScreen):
                     return None
 
                 if self.main_button.collidepoint(event.pos):
-                    self.show_settings = False
-                    return (ScreenState.MAIN, ())
+                    if self.current_slot is not None and self.save_data is not None:
+                        save_game(self.current_slot, self.save_data)
+                    return ScreenState.MAIN
 
         return None
 
@@ -56,6 +57,9 @@ class GameScreen(BaseScreen):
         width, height = surface.get_size()
         self.update_layout(surface)
         surface.fill(Color.GAME_BACKGROUND.value)
+
+        if self.current_slot is not None:
+            self.draw_text(surface, self.current_slot.name, (width // 2, height // 2))
 
         settings_color = (
             Color.PANEL_HOVER.value
