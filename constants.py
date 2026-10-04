@@ -33,7 +33,7 @@ class Screen:
     HEIGHT = 600
     FPS = 60
     RESIZABLE = True
-    FADE_DURATION_MS = 1000
+    FADE_DURATION_MS = 300
 
 
 class Font:
