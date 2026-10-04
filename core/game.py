@@ -84,6 +84,9 @@ class Game:
                 pygame.MOUSEBUTTONDOWN,
                 pygame.MOUSEBUTTONUP
             ):
+                if self.transition.active:
+                    continue
+
                 mouse_pos = self.transform_mouse_pos(event.pos)
 
                 if mouse_pos is None:
